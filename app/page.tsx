@@ -130,7 +130,7 @@ const Navbar = () => {
   );
 };
 
-/* --- Hero Section --- */
+/*/* --- Hero Section --- */
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
@@ -149,8 +149,8 @@ const Hero = () => {
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-8 tracking-tight leading-none">
           LOGIC. <br className="md:hidden" />
           SCALE. <br className="md:hidden" />
-          {/* Now using explicitly standard colors to ensure visibility on all devices */}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">
+          {/* UPDATED: Uses Hex codes and inline-block to force visibility on mobile */}
+          <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-[#22d3ee] to-[#818cf8] pb-1">
             AUTOMATION.
           </span>
         </h1>
@@ -171,6 +171,7 @@ const Hero = () => {
       </div>
     </section>
   );
+};
 };
 
 /* --- Services Section --- */
