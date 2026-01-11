@@ -2,20 +2,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 
-/* --- 1. PROFESSIONAL CLOCK (Canvas + CSS Version) --- */
-const HulyClock = () => {
+const EnhancedGlowClock = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [time, setTime] = useState<Date | null>(null);
-  const trailRef = useRef<Array<{ angle: number; opacity: number }>>([]);
+  const trailRef = useRef<Array<{ angle: number; timestamp: number }>>([]);
 
   useEffect(() => {
-    // Initialize time immediately to avoid hydration mismatch
     setTime(new Date());
-    const interval = setInterval(() => setTime(new Date()), 50);
+    const interval = setInterval(() => setTime(new Date()), 16); // ~60fps
     return () => clearInterval(interval);
   }, []);
 
-  // Canvas Effect for the "Comet" Trail
   useEffect(() => {
     if (!canvasRef.current || !time) return;
     const canvas = canvasRef.current;
@@ -23,7 +20,6 @@ const HulyClock = () => {
     if (!ctx) return;
 
     const rect = canvas.getBoundingClientRect();
-    // Handle High-DPI displays
     canvas.width = rect.width * window.devicePixelRatio;
     canvas.height = rect.height * window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -33,33 +29,97 @@ const HulyClock = () => {
     const radius = rect.width / 2 - 20;
 
     const seconds = time.getSeconds() + time.getMilliseconds() / 1000;
-    // -90 degrees offset to start at top (12 o'clock)
-    const secAngle = (seconds * 6 - 90) * (Math.PI / 180); 
+    const secAngle = (seconds * 6 - 90) * (Math.PI / 180);
 
-    // Clear Canvas
     ctx.clearRect(0, 0, rect.width, rect.height);
 
-    // Update Trail Data
-    trailRef.current.push({ angle: secAngle, opacity: 1 });
-    // Keep trail length short for performance/visuals
-    if (trailRef.current.length > 20) {
-      trailRef.current.shift();
+    const now = Date.now();
+    trailRef.current.push({ angle: secAngle, timestamp: now });
+    
+    // Keep trail for longer to create the arc effect
+    trailRef.current = trailRef.current.filter(t => now - t.timestamp < 2000);
+
+    // Draw the glowing arc trail
+    if (trailRef.current.length > 1) {
+      // Create gradient path
+      for (let i = 0; i < trailRef.current.length - 1; i++) {
+        const trail = trailRef.current[i];
+        const age = now - trail.timestamp;
+        const maxAge = 2000;
+        const normalizedAge = age / maxAge;
+        
+        // Fade from bright orange/white to blue/purple
+        const opacity = Math.pow(1 - normalizedAge, 1.5);
+        
+        // Color transition: white -> orange -> red -> purple -> blue
+        let r, g, b;
+        if (normalizedAge < 0.2) {
+          // White to bright orange
+          const t = normalizedAge / 0.2;
+          r = 255;
+          g = 255 - t * 155;
+          b = 255 - t * 205;
+        } else if (normalizedAge < 0.5) {
+          // Orange to red/purple
+          const t = (normalizedAge - 0.2) / 0.3;
+          r = 255 - t * 55;
+          g = 100 - t * 50;
+          b = 50 + t * 150;
+        } else {
+          // Purple to blue
+          const t = (normalizedAge - 0.5) / 0.5;
+          r = 200 - t * 100;
+          g = 50 + t * 130;
+          b = 200 + t * 55;
+        }
+
+        const x = centerX + Math.cos(trail.angle) * radius * 0.88;
+        const y = centerY + Math.sin(trail.angle) * radius * 0.88;
+
+        // Draw multiple layers for intense glow
+        for (let layer = 0; layer < 3; layer++) {
+          const layerSize = 8 + layer * 6;
+          const layerOpacity = opacity * (0.6 - layer * 0.15);
+
+          const gradient = ctx.createRadialGradient(x, y, 0, x, y, layerSize);
+          gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${layerOpacity})`);
+          gradient.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${layerOpacity * 0.5})`);
+          gradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+
+          ctx.beginPath();
+          ctx.arc(x, y, layerSize, 0, Math.PI * 2);
+          ctx.fillStyle = gradient;
+          ctx.fill();
+        }
+      }
     }
 
-    // Draw Trail
-    trailRef.current.forEach((trail, index) => {
-      const opacity = (index / trailRef.current.length) * 0.8;
-      
-      // Calculate start and end points of the trail segment
-      const x = centerX + Math.cos(trail.angle) * radius * 0.85;
-      const y = centerY + Math.sin(trail.angle) * radius * 0.85;
-      
-      // Draw a glowing dot or line
-      ctx.beginPath();
-      ctx.arc(x, y, 4 * opacity, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255, 100, 50, ${opacity})`;
-      ctx.fill();
-    });
+    // Draw bright leading point (the "comet head")
+    const currentX = centerX + Math.cos(secAngle) * radius * 0.88;
+    const currentY = centerY + Math.sin(secAngle) * radius * 0.88;
+
+    // Outer glow
+    const outerGlow = ctx.createRadialGradient(currentX, currentY, 0, currentX, currentY, 30);
+    outerGlow.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+    outerGlow.addColorStop(0.2, 'rgba(255, 200, 100, 0.8)');
+    outerGlow.addColorStop(0.5, 'rgba(255, 100, 50, 0.4)');
+    outerGlow.addColorStop(1, 'rgba(255, 100, 50, 0)');
+
+    ctx.beginPath();
+    ctx.arc(currentX, currentY, 30, 0, Math.PI * 2);
+    ctx.fillStyle = outerGlow;
+    ctx.fill();
+
+    // Core bright point
+    const coreGlow = ctx.createRadialGradient(currentX, currentY, 0, currentX, currentY, 8);
+    coreGlow.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    coreGlow.addColorStop(0.5, 'rgba(255, 220, 150, 0.9)');
+    coreGlow.addColorStop(1, 'rgba(255, 150, 80, 0)');
+
+    ctx.beginPath();
+    ctx.arc(currentX, currentY, 8, 0, Math.PI * 2);
+    ctx.fillStyle = coreGlow;
+    ctx.fill();
 
   }, [time]);
 
@@ -74,129 +134,113 @@ const HulyClock = () => {
   const hourDeg = (hours % 12) * 30 + minutes * 0.5;
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center rounded-full bg-black overflow-hidden group border border-white/10 shadow-2xl">
+    <div className="relative w-full h-full flex items-center justify-center rounded-full bg-black overflow-hidden border border-white/10 shadow-2xl">
       
-      {/* CANVAS LAYER: The "Comet" Trail */}
+      {/* CANVAS LAYER: Enhanced Comet Trail */}
       <canvas
         ref={canvasRef}
         className="absolute inset-0 z-10 pointer-events-none w-full h-full"
+        style={{ filter: 'blur(0.5px)' }}
       />
 
-      {/* LAYER 0: BACKGROUND ATMOSPHERE */}
+      {/* Background atmosphere */}
       <div className="absolute inset-0 rounded-full bg-gradient-to-b from-slate-900/50 via-black to-black z-0"></div>
       
-      {/* LAYER 1: ANIMATED RING GLOW */}
+      {/* Rotating glow that follows second hand */}
       <div 
-        className="absolute inset-0 rounded-full opacity-50 blur-3xl z-1"
+        className="absolute inset-0 rounded-full opacity-60 blur-3xl z-1"
         style={{
-          background: `conic-gradient(from ${secDeg}deg, transparent 0%, rgba(6, 182, 212, 0.4) 12%, rgba(139, 92, 246, 0.25) 35%, rgba(255, 100, 0, 0.2) 60%, transparent 80%)`,
+          background: `conic-gradient(from ${secDeg}deg, transparent 0%, rgba(255, 150, 80, 0.5) 5%, rgba(139, 92, 246, 0.3) 20%, rgba(6, 182, 212, 0.25) 40%, transparent 60%)`,
         }}
       ></div>
 
-      {/* LAYER 3: STATIC OUTER RING BORDER */}
-      <div className="absolute inset-0 rounded-full border-2 border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.3)] z-2"></div>
+      {/* Outer ring */}
+      <div className="absolute inset-0 rounded-full border-2 border-cyan-500/20 shadow-[0_0_40px_rgba(6,182,212,0.2)] z-2"></div>
 
-      {/* LAYER 4: CLOCK FACE CONTAINER */}
+      {/* Clock face */}
       <div className="relative w-[96%] h-[96%] bg-gradient-to-b from-slate-950 via-black to-slate-950 rounded-full flex items-center justify-center overflow-hidden border border-white/5 z-10 shadow-[inset_0_0_60px_rgba(0,0,0,0.9)]">
         
-        {/* Deep Radial Gradient */}
-        <div className="absolute inset-0 z-0 opacity-50" 
-             style={{ background: 'radial-gradient(circle at center, rgba(15, 23, 42, 0) 0%, rgba(0, 0, 0, 0.6) 100%)' }}>
+        {/* Radial gradient */}
+        <div className="absolute inset-0 z-0 opacity-60" 
+             style={{ background: 'radial-gradient(circle at center, rgba(30, 30, 60, 0.1) 0%, rgba(0, 0, 0, 0.8) 100%)' }}>
         </div>
 
         {/* Texture */}
-        <div className="absolute inset-0 opacity-20 z-0" 
+        <div className="absolute inset-0 opacity-15 z-0" 
              style={{ 
-               backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 0.5px, transparent 0.5px)', 
-               backgroundSize: '12px 12px' 
+               backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.05) 0.5px, transparent 0.5px)', 
+               backgroundSize: '10px 10px' 
              }}>
         </div>
 
-        {/* Concentric Rings */}
-        <div className="absolute inset-0 z-0 opacity-10">
-          {[1, 2, 3, 4].map((i) => (
-            <div 
-              key={i} 
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/20"
-              style={{ width: `${20 + i * 20}%`, height: `${20 + i * 20}%` }}
-            ></div>
-          ))}
-        </div>
-
-        {/* LAYER 6: HOUR MARKERS */}
+        {/* Hour markers at 12, 3, 6, 9 */}
         <div className="absolute inset-0 z-5">
           {[0, 1, 2, 3].map((i) => {
             const angle = (i * 90) * (Math.PI / 180);
-            const x = Math.sin(angle) * 45;
-            const y = -Math.cos(angle) * 45;
+            const x = Math.sin(angle) * 44;
+            const y = -Math.cos(angle) * 44;
             return (
               <div 
                 key={i} 
-                className="absolute w-1.5 h-4 bg-gradient-to-b from-cyan-300 to-cyan-500 rounded-full"
+                className="absolute w-1 h-3 bg-gradient-to-b from-slate-400 to-slate-600 rounded-full opacity-60"
                 style={{ 
                   top: '50%', 
                   left: '50%', 
                   transform: `translate(calc(-50% + ${x}%), calc(-50% + ${y}%))`,
-                  boxShadow: '0 0 12px rgba(6, 182, 212, 0.8)'
                 }}
               ></div>
             );
           })}
         </div>
 
-        {/* LAYER 7a: Hour Hand */}
+        {/* Hour Hand */}
         <div 
           className="absolute origin-bottom z-20"
           style={{ 
-            width: '6px', 
-            height: '25%', 
+            width: '5px', 
+            height: '23%', 
             bottom: '50%', 
             left: '50%', 
-            marginLeft: '-3px',
+            marginLeft: '-2.5px',
             transform: `rotate(${hourDeg}deg)`,
-            background: `linear-gradient(to top, rgba(30, 144, 255, 0.95), rgba(200, 220, 255, 0.7))`,
-            borderRadius: '8px 8px 0 0',
-            boxShadow: `0 0 20px rgba(6, 182, 212, 0.4)`
+            background: `linear-gradient(to top, rgba(80, 80, 100, 0.95), rgba(120, 120, 140, 0.7))`,
+            borderRadius: '6px 6px 0 0',
+            boxShadow: `0 0 10px rgba(100, 100, 120, 0.3)`
           }}
         ></div>
 
-        {/* LAYER 7b: Minute Hand */}
+        {/* Minute Hand */}
         <div 
           className="absolute origin-bottom z-30"
           style={{ 
             width: '4px', 
-            height: '35%', 
+            height: '33%', 
             bottom: '50%', 
             left: '50%', 
             marginLeft: '-2px',
             transform: `rotate(${minDeg}deg)`,
-            background: `linear-gradient(to top, rgba(0, 255, 200, 0.95), rgba(200, 255, 240, 0.8))`,
-            borderRadius: '6px 6px 0 0',
-            boxShadow: `0 0 25px rgba(34, 211, 238, 0.5)`
+            background: `linear-gradient(to top, rgba(100, 100, 120, 0.95), rgba(150, 150, 170, 0.8))`,
+            borderRadius: '5px 5px 0 0',
+            boxShadow: `0 0 15px rgba(120, 120, 140, 0.4)`
           }}
         ></div>
 
-        {/* LAYER 7c: Second Hand */}
+        {/* Second Hand - Invisible (trail shows it) */}
         <div 
-          className="absolute origin-bottom z-40"
+          className="absolute origin-bottom z-40 opacity-0"
           style={{ 
             width: '2px', 
-            height: '42%', 
+            height: '40%', 
             bottom: '50%', 
             left: '50%', 
             marginLeft: '-1px',
             transform: `rotate(${secDeg}deg)`,
-            background: `linear-gradient(to top, rgb(255, 100, 0), rgba(255, 200, 100, 0))`,
-            boxShadow: `0 0 15px rgba(255, 100, 0, 0.8)`
           }}
-        >
-          {/* Glowing Tip */}
-          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_15px_rgba(255,150,50,1)]"></div>
-        </div>
+        ></div>
 
-        {/* LAYER 8: CENTER CAP */}
-        <div className="absolute w-5 h-5 rounded-full z-50 flex items-center justify-center bg-slate-800 border border-slate-600 shadow-lg">
-          <div className="w-2 h-2 rounded-full bg-black"></div>
+        {/* Center cap */}
+        <div className="absolute w-4 h-4 rounded-full z-50 flex items-center justify-center bg-slate-800 border border-slate-600 shadow-lg">
+          <div className="w-1.5 h-1.5 rounded-full bg-black"></div>
         </div>
 
       </div>
