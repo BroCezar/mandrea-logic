@@ -2,14 +2,29 @@
 
 import React, { useState, useEffect } from 'react';
 
-/* --- 1. REPLICATED CLOCK COMPONENT (High-Fidelity Version) --- */
+/* --- ENHANCED CLOCK COMPONENT (Studio-Grade Version) --- */
 const HulyClock = () => {
   const [time, setTime] = useState<Date | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     setTime(new Date());
     const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = (e.currentTarget as HTMLElement)?.getBoundingClientRect?.();
+      if (rect) {
+        setMousePos({
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        });
+      }
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   if (!time) return null;
@@ -23,71 +38,219 @@ const HulyClock = () => {
   const hourDeg = (hours % 12) * 30 + minutes * 0.5;
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center rounded-full bg-[#0B0C0F] border border-white/10 shadow-2xl">
+    <div className="relative w-full h-full flex items-center justify-center rounded-full bg-black overflow-hidden group">
       
-      {/* 1. OUTER BLOOM TRAIL (Conic Gradient) */}
+      {/* LAYER 0: BACKGROUND ATMOSPHERE */}
+      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-slate-900/50 via-black to-black"></div>
+      
+      {/* LAYER 1: ANIMATED RING GLOW (Pulsing Aurora) */}
       <div 
-        className="absolute inset-0 rounded-full opacity-60 blur-2xl"
+        className="absolute inset-0 rounded-full opacity-40 blur-3xl animate-pulse"
         style={{
-          background: `conic-gradient(from ${secDeg - 90}deg, transparent 0%, transparent 80%, #a5f3fc 95%, #ffffff 100%)`,
-          transform: 'scale(0.95)'
+          background: `conic-gradient(from ${secDeg}deg, 
+            transparent 0%, 
+            rgba(6, 182, 212, 0.3) 15%, 
+            rgba(139, 92, 246, 0.2) 40%,
+            transparent 60%)`
         }}
       ></div>
 
-      {/* 2. CLOCK FACE CONTAINER */}
-      <div className="relative w-[96%] h-[96%] bg-[#0f1014] rounded-full flex items-center justify-center overflow-hidden border border-white/5 z-10 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)]">
+      {/* LAYER 2: SECONDARY GLOW RING */}
+      <div 
+        className="absolute inset-0 rounded-full opacity-30"
+        style={{
+          background: `conic-gradient(from ${secDeg + 90}deg, 
+            transparent 0%, 
+            rgba(34, 211, 238, 0.15) 20%, 
+            transparent 50%)`
+        }}
+      ></div>
+
+      {/* LAYER 3: STATIC OUTER RING BORDER */}
+      <div className="absolute inset-0 rounded-full border-2 border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.2)]"></div>
+
+      {/* LAYER 4: CLOCK FACE CONTAINER */}
+      <div className="relative w-[96%] h-[96%] bg-gradient-to-b from-slate-950 via-black to-slate-950 rounded-full flex items-center justify-center overflow-hidden border border-white/5 z-10 shadow-[inset_0_0_60px_rgba(0,0,0,0.9),inset_0_0_30px_rgba(6,182,212,0.05)]">
         
-        {/* Depth Layer: Warm Glow Overlay (Huly Style) */}
-        <div className="absolute inset-0 z-0 opacity-40"
-             style={{ background: 'radial-gradient(circle at center, rgba(255, 150, 50, 0.15) 0%, transparent 60%)' }}>
+        {/* Deep Radial Gradient for Depth */}
+        <div className="absolute inset-0 z-0 opacity-50"
+             style={{ background: 'radial-gradient(circle at center, rgba(15, 23, 42, 0) 0%, rgba(0, 0, 0, 0.6) 100%)' }}>
         </div>
 
-        {/* Texture: Dot Grid */}
-        <div className="absolute inset-0 opacity-20 z-0" 
-             style={{ backgroundImage: 'radial-gradient(#ffffff 0.5px, transparent 0.5px)', backgroundSize: '10px 10px' }}>
+        {/* LAYER 5: PREMIUM TEXTURE - Subtle Dots + Concentric Rings */}
+        <div className="absolute inset-0 opacity-25 z-0" 
+             style={{ 
+               backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 0.5px, transparent 0.5px)',
+               backgroundSize: '12px 12px' 
+             }}>
         </div>
 
-        {/* 3. THE HANDS (With Z-Index & Shadows) */}
+        {/* Concentric Ring Pattern */}
+        <div className="absolute inset-0 z-0 opacity-10">
+          {[1, 2, 3, 4].map(i => (
+            <div 
+              key={i}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/20"
+              style={{ width: `${20 + i * 20}%`, height: `${20 + i * 20}%` }}
+            ></div>
+          ))}
+        </div>
 
-        {/* Hour Hand - Bottom Layer */}
+        {/* LAYER 6: HOUR MARKERS (12-3-6-9 Points) */}
+        <div className="absolute inset-0 z-5">
+          {[0, 1, 2, 3].map(i => {
+            const angle = (i * 90) * (Math.PI / 180);
+            const x = Math.sin(angle) * 45;
+            const y = -Math.cos(angle) * 45;
+            return (
+              <div
+                key={i}
+                className="absolute w-1 h-3 bg-gradient-to-b from-cyan-400/80 to-cyan-400/40 rounded-full"
+                style={{
+                  top: '50%',
+                  left: '50%',
+                  transform: `translate(calc(-50% + ${x}%), calc(-50% + ${y}%))`,
+                  boxShadow: '0 0 8px rgba(6, 182, 212, 0.6)'
+                }}
+              ></div>
+            );
+          })}
+        </div>
+
+        {/* LAYER 7: THE HANDS (Premium Styling) */}
+
+        {/* Hour Hand - Premium Gradient */}
         <div 
-           className="absolute w-1.5 h-20 bg-gradient-to-t from-slate-600 to-slate-300 rounded-full z-20 origin-bottom"
-           style={{ 
-             transform: `rotate(${hourDeg}deg) translateY(-50%)`,
-             boxShadow: '0 0 4px rgba(0,0,0,0.8)' // Subtle shadow
-           }}
+          className="absolute origin-bottom z-20 group-hover:drop-shadow-[0_0_20px_rgba(100,200,255,0.6)] transition-all duration-200"
+          style={{
+            width: '6px',
+            height: '70px',
+            bottom: '50%',
+            left: '50%',
+            marginLeft: '-3px',
+            transform: `rotate(${hourDeg}deg) translateY(0)`,
+            background: `linear-gradient(to top, 
+              rgba(30, 144, 255, 0.95) 0%,
+              rgba(100, 180, 255, 0.9) 50%,
+              rgba(200, 220, 255, 0.7) 100%)`,
+            borderRadius: '8px 8px 0 0',
+            boxShadow: `
+              0 2px 12px rgba(30, 144, 255, 0.6),
+              0 0 20px rgba(6, 182, 212, 0.4),
+              inset 0 1px 2px rgba(255, 255, 255, 0.3)
+            `,
+            clipPath: 'polygon(0 100%, 50% 0, 100% 100%)'
+          }}
         ></div>
 
-        {/* Minute Hand - Middle Layer */}
+        {/* Minute Hand - Premium Gradient */}
         <div 
-           className="absolute w-1 h-32 bg-gradient-to-t from-slate-500 to-white rounded-full z-30 origin-bottom"
-           style={{ 
-             transform: `rotate(${minDeg}deg) translateY(-50%)`,
-             boxShadow: '0 4px 10px rgba(0,0,0,0.5), 0 0 8px rgba(255,255,255,0.2)' // Lifted shadow + Glow
-           }}
+          className="absolute origin-bottom z-30 group-hover:drop-shadow-[0_0_25px_rgba(0,255,200,0.8)] transition-all duration-200"
+          style={{
+            width: '4px',
+            height: '105px',
+            bottom: '50%',
+            left: '50%',
+            marginLeft: '-2px',
+            transform: `rotate(${minDeg}deg) translateY(0)`,
+            background: `linear-gradient(to top,
+              rgba(0, 255, 200, 0.95) 0%,
+              rgba(100, 255, 220, 0.9) 50%,
+              rgba(200, 255, 240, 0.8) 100%)`,
+            borderRadius: '6px 6px 0 0',
+            boxShadow: `
+              0 4px 16px rgba(0, 255, 200, 0.7),
+              0 0 25px rgba(34, 211, 238, 0.5),
+              inset 0 1px 3px rgba(255, 255, 255, 0.4)
+            `,
+            clipPath: 'polygon(0 100%, 50% 0, 100% 100%)'
+          }}
         ></div>
 
-        {/* Second Hand - Top Layer (High Contrast) */}
+        {/* Second Hand - High Contrast Accent */}
         <div 
-           className="absolute w-[2px] h-36 bg-orange-500 z-40 origin-bottom"
-           style={{ 
-             transform: `rotate(${secDeg}deg) translateY(-30%)`,
-             boxShadow: '0 0 12px rgba(255, 100, 0, 0.6)' // Strong orange glow
-           }}
+          className="absolute origin-bottom z-40 group-hover:drop-shadow-[0_0_30px_rgba(255,100,0,1)] transition-all duration-200"
+          style={{
+            width: '2px',
+            height: '115px',
+            bottom: '50%',
+            left: '50%',
+            marginLeft: '-1px',
+            transform: `rotate(${secDeg}deg) translateY(0)`,
+            background: `linear-gradient(to top,
+              rgb(255, 100, 0) 0%,
+              rgb(255, 150, 50) 60%,
+              rgba(255, 200, 100, 0) 100%)`,
+            boxShadow: `
+              0 0 15px rgba(255, 100, 0, 0.8),
+              0 0 30px rgba(255, 100, 0, 0.4),
+              0 2px 8px rgba(0, 0, 0, 0.6)
+            `,
+            filter: 'drop-shadow(0 0 4px rgba(255, 100, 0, 0.6))'
+          }}
         >
-             {/* Glowing Tip */}
-             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_15px_white]"></div>
+          {/* Glowing Tip */}
+          <div 
+            className="absolute -top-2 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white rounded-full"
+            style={{
+              boxShadow: '0 0 20px rgba(255, 100, 0, 0.9), 0 0 30px rgba(255, 150, 50, 0.6)'
+            }}
+          ></div>
         </div>
 
-        {/* 4. CENTER CAP (Pivot Point) */}
-        <div className="absolute w-4 h-4 rounded-full z-50 flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-600 shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
-             <div className="w-1.5 h-1.5 bg-black rounded-full opacity-50"></div>
+        {/* LAYER 8: CENTER CAP (Premium Pivot) */}
+        <div 
+          className="absolute w-5 h-5 rounded-full z-50 flex items-center justify-center backdrop-blur-sm"
+          style={{
+            background: `radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(100, 150, 255, 0.6), rgba(30, 100, 200, 0.8))`,
+            boxShadow: `
+              0 4px 12px rgba(0, 0, 0, 0.9),
+              0 0 20px rgba(6, 182, 212, 0.6),
+              inset 0 -1px 3px rgba(0, 0, 0, 0.5),
+              inset 0 1px 3px rgba(255, 255, 255, 0.6)
+            `,
+            border: '1.5px solid rgba(200, 220, 255, 0.7)'
+          }}
+        >
+          {/* Inner Shadow Disc */}
+          <div 
+            className="w-2 h-2 rounded-full"
+            style={{
+              background: 'radial-gradient(circle at 40% 40%, rgba(50, 100, 200, 0.8), rgba(10, 20, 60, 0.9))',
+              boxShadow: 'inset 0 -1px 2px rgba(0, 0, 0, 0.8)'
+            }}
+          ></div>
         </div>
+
+        {/* LAYER 9: AMBIENT GLOW AROUND CENTER (Halo) */}
+        <div 
+          className="absolute w-12 h-12 rounded-full z-45 opacity-40"
+          style={{
+            background: 'radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%)',
+            filter: 'blur(8px)',
+            boxShadow: '0 0 30px rgba(6, 182, 212, 0.3)'
+          }}
+        ></div>
 
       </div>
+
+      {/* LAYER 10: OUTER RIM BLOOM (Final Touch) */}
+      <div 
+        className="absolute inset-0 rounded-full opacity-50"
+        style={{
+          boxShadow: `
+            0 0 60px rgba(6, 182, 212, 0.3),
+            0 0 100px rgba(139, 92, 246, 0.15),
+            inset 0 0 40px rgba(0, 0, 0, 0.5)
+          `
+        }}
+      ></div>
+
     </div>
   );
 };
+
+
 
 /* --- 2. ICONS & ASSETS --- */
 const Icons = {
