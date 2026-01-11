@@ -47,22 +47,36 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    // 1. FORCE SCROLL TO TOP ON REFRESH
+    // 1. AGGRESSIVE SCROLL TO TOP FIX
+    // This disables the browser's memory of where you were
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
     }
-    window.scrollTo(0, 0);
+    
+    // 2. Remove any #hash from the URL (like #services) so it doesn't jump
+    if (window.location.hash) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
 
-    // 2. Handle Navbar Background on Scroll
+    // 3. Force scroll to 0 immediately, and again after a tiny delay to ensure it overrides everything
+    window.scrollTo(0, 0);
+    const timer = setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 50);
+
+    // Handle Navbar Background
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
       if (isMobileMenuOpen) setIsMobileMenuOpen(false);
     };
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(timer);
+    };
   }, [isMobileMenuOpen]);
 
-  // Function to smoothly scroll to top
   const scrollToTop = (e: React.MouseEvent) => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -81,7 +95,7 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             
-            {/* LOGO - Now Clickable to go HOME */}
+            {/* LOGO - Click to go HOME */}
             <a href="#" onClick={scrollToTop} className="flex-shrink-0 flex items-center gap-3 cursor-pointer group">
               <div className="w-8 h-8 bg-brand-500 rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)] group-hover:shadow-[0_0_25px_rgba(6,182,212,0.8)] transition-all">
                 <span className="text-dark-950 font-bold -rotate-45 text-sm">M</span>
