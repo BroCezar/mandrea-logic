@@ -1,9 +1,66 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import TechClock from './Clock'; // Importing the new Clock component
 
-/* --- Icons --- */
+/* --- 1. THE CLOCK COMPONENT (Integrated directly here) --- */
+const TechClock = () => {
+  const [time, setTime] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setTime(new Date());
+    const interval = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!time) return <div className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-dark-950 border border-slate-800 animate-pulse"></div>;
+
+  const seconds = time.getSeconds();
+  const minutes = time.getMinutes();
+  const hours = time.getHours();
+
+  const secDeg = seconds * 6;
+  const minDeg = minutes * 6 + seconds * 0.1;
+  const hourDeg = (hours % 12) * 30 + minutes * 0.5;
+
+  return (
+    <div className="relative w-72 h-72 md:w-80 md:h-80 flex items-center justify-center rounded-full bg-dark-950 shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-slate-800/50 p-2 select-none scale-90 md:scale-100">
+      
+      {/* Outer Glow Trail */}
+      <div 
+        className="absolute inset-0 rounded-full opacity-60 blur-2xl transition-transform duration-1000 ease-linear will-change-transform"
+        style={{
+          background: `conic-gradient(from ${secDeg - 90}deg, transparent 0%, transparent 70%, #06b6d4 90%, #f97316 100%)`
+        }}
+      ></div>
+
+      {/* Inner Face */}
+      <div className="relative w-full h-full bg-dark-950 rounded-full flex items-center justify-center z-10 overflow-hidden border border-slate-700/30">
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#64748b 1px, transparent 1px)', backgroundSize: '8px 8px' }}></div>
+
+        {/* Ticks */}
+        {[...Array(12)].map((_, i) => (
+          <div 
+            key={i} 
+            className={`absolute w-1 h-3 bg-slate-600 ${i % 3 === 0 ? 'h-5 bg-slate-400 w-1.5' : ''}`}
+            style={{ transform: `rotate(${i * 30}deg) translateY(-130px)`, transformOrigin: 'center 140px' }}
+          />
+        ))}
+
+        {/* Hands */}
+        <div className="absolute w-2 h-20 bg-slate-300 rounded-full z-20 shadow-lg origin-bottom" style={{ transform: `rotate(${hourDeg}deg) translateY(-50%)` }}></div>
+        <div className="absolute w-1.5 h-28 bg-brand-500 rounded-full z-30 shadow-[0_0_10px_rgba(6,182,212,0.5)] origin-bottom" style={{ transform: `rotate(${minDeg}deg) translateY(-50%)` }}></div>
+        <div className="absolute w-0.5 h-32 bg-orange-500 z-40 origin-bottom transition-transform duration-1000 ease-linear" style={{ transform: `rotate(${secDeg}deg) translateY(-30%)` }}>
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_15px_#f97316]"></div>
+        </div>
+        
+        <div className="absolute w-4 h-4 bg-slate-200 rounded-full z-50 border-2 border-dark-950"></div>
+        <div className="absolute top-20 text-[10px] font-bold tracking-[0.3em] text-slate-600 uppercase">Mandrea</div>
+      </div>
+    </div>
+  );
+};
+
+/* --- 2. ICONS --- */
 const Icons = {
   Chip: () => (<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25z" /></svg>),
   Network: () => (<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>),
@@ -13,7 +70,7 @@ const Icons = {
   Close: () => (<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>)
 };
 
-/* --- Navigation --- */
+/* --- 3. NAVIGATION --- */
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -87,7 +144,7 @@ const Navbar = () => {
   );
 };
 
-/* --- Hero --- */
+/* --- 4. HERO SECTION --- */
 const TypewriterText = ({ text, delay = 0 }: { text: string, delay?: number }) => {
   const [displayedText, setDisplayedText] = useState('');
   useEffect(() => {
@@ -136,7 +193,7 @@ const Hero = () => {
   );
 };
 
-/* --- NEW: Real-Time Intelligence Section with Clock --- */
+/* --- 5. REAL-TIME INTELLIGENCE (With Clock) --- */
 const RealTimeSection = () => {
   return (
     <section className="py-24 bg-dark-950 border-y border-slate-800/50 overflow-hidden relative">
@@ -158,6 +215,7 @@ const RealTimeSection = () => {
         </div>
         <div className="md:w-1/2 flex justify-center relative">
            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full"></div>
+           {/* Calling the internal TechClock component */}
            <TechClock />
         </div>
       </div>
@@ -165,7 +223,7 @@ const RealTimeSection = () => {
   );
 };
 
-/* --- Services --- */
+/* --- 6. SERVICES --- */
 const Services = () => {
   const services = [
     { title: "Autonomous Agents", desc: "Deploy self-governing AI agents capable of executing complex multi-step workflows without human intervention.", icon: <Icons.Chip /> },
@@ -194,7 +252,7 @@ const Services = () => {
   );
 };
 
-/* --- Industries --- */
+/* --- 7. INDUSTRIES --- */
 const Industries = () => {
   const sectors = [
     { name: "Fintech", detail: "Fraud detection & Algorithmic auditing" },
@@ -221,7 +279,7 @@ const Industries = () => {
   );
 };
 
-/* --- Process --- */
+/* --- 8. PROCESS --- */
 const Process = () => {
   return (
     <section id="process" className="py-32 bg-dark-950 relative overflow-hidden">
@@ -247,7 +305,7 @@ const Process = () => {
   );
 };
 
-/* --- Testimonials --- */
+/* --- 9. TESTIMONIALS --- */
 const Testimonials = () => {
   const reviews = [
     { q: "Mandrea Logic transformed our manual auditing process into a fully autonomous workflow. The accuracy is unmatched.", a: "Director of Ops, FinServe Global" },
@@ -271,7 +329,7 @@ const Testimonials = () => {
   );
 };
 
-/* --- Footer --- */
+/* --- 10. FOOTER --- */
 const Footer = () => (
   <footer className="bg-dark-950 py-12 border-t border-slate-900">
     <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
@@ -289,6 +347,7 @@ const Footer = () => (
   </footer>
 );
 
+/* --- MAIN PAGE ASSEMBLY --- */
 export default function Home() {
   return (
     <main className="bg-dark-950 min-h-screen selection:bg-brand-500/30 selection:text-white">
