@@ -46,11 +46,16 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  // Handle Scroll Effect for Navbar background
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+      // Close mobile menu on scroll
+      if (isMobileMenuOpen) setIsMobileMenuOpen(false);
+    };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isMobileMenuOpen]);
 
   const navLinks = [
     { name: 'Expertise', href: '#services' },
@@ -60,55 +65,60 @@ const Navbar = () => {
   ];
 
   return (
-    <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'glass' : 'bg-transparent py-6'}`}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center gap-3">
-            <div className="w-8 h-8 bg-brand-500 rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-              <span className="text-dark-950 font-bold -rotate-45 text-sm">M</span>
+    <>
+      <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'glass border-b border-white/5' : 'bg-transparent py-6'}`}>
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <div className="flex-shrink-0 flex items-center gap-3">
+              <div className="w-8 h-8 bg-brand-500 rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+                <span className="text-dark-950 font-bold -rotate-45 text-sm">M</span>
+              </div>
+              <span className="text-xl font-bold tracking-widest text-white uppercase">
+                Mandrea<span className="text-brand-500">Logic</span>
+              </span>
             </div>
-            <span className="text-xl font-bold tracking-widest text-white uppercase">
-              Mandrea<span className="text-brand-500">Logic</span>
-            </span>
-          </div>
-          
-          {/* Desktop Nav - No Contact Button */}
-          <div className="hidden md:flex items-center space-x-12">
-            {navLinks.map((link) => (
-              <a 
-                key={link.name} 
-                href={link.href} 
-                className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide uppercase"
-              >
-                {link.name}
-              </a>
-            ))}
-          </div>
+            
+            {/* Desktop Nav */}
+            <div className="hidden md:flex items-center space-x-12">
+              {navLinks.map((link) => (
+                <a 
+                  key={link.name} 
+                  href={link.href} 
+                  className="text-sm font-medium text-slate-400 hover:text-white transition-colors tracking-wide uppercase"
+                >
+                  {link.name}
+                </a>
+              ))}
+            </div>
 
-          {/* Mobile Menu Toggle */}
-          <div className="md:hidden">
-            <button 
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-slate-300 hover:text-white"
-              aria-label="Menu"
-            >
-              {isMobileMenuOpen ? <Icons.Close /> : <Icons.Menu />}
-            </button>
+            {/* Mobile Menu Toggle */}
+            <div className="md:hidden">
+              <button 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-slate-300 hover:text-white relative z-50"
+                aria-label="Menu"
+              >
+                {isMobileMenuOpen ? <Icons.Close /> : <Icons.Menu />}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Mobile Menu */}
+      {/* Full Screen Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-dark-950 border-b border-dark-800 animate-slide-up">
-          <div className="px-6 py-8 flex flex-col space-y-6">
+        <div 
+          className="fixed inset-0 z-40 bg-dark-950/80 backdrop-blur-xl md:hidden flex items-center justify-center animate-fade-in"
+          onClick={() => setIsMobileMenuOpen(false)} // Close on click outside
+        >
+          <div className="flex flex-col items-center space-y-8 p-8 text-center">
             {navLinks.map((link) => (
               <a 
                 key={link.name} 
                 href={link.href}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="text-lg font-medium text-slate-300 hover:text-brand-400"
+                className="text-2xl font-light text-white tracking-widest uppercase hover:text-brand-400 transition-colors"
               >
                 {link.name}
               </a>
@@ -116,7 +126,7 @@ const Navbar = () => {
           </div>
         </div>
       )}
-    </header>
+    </>
   );
 };
 
@@ -139,7 +149,8 @@ const Hero = () => {
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-8 tracking-tight leading-none">
           LOGIC. <br className="md:hidden" />
           SCALE. <br className="md:hidden" />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-indigo-400">
+          {/* Now using explicitly standard colors to ensure visibility on all devices */}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">
             AUTOMATION.
           </span>
         </h1>
@@ -150,11 +161,9 @@ const Hero = () => {
         </p>
         
         <div className="flex flex-col sm:flex-row justify-center gap-6">
-          {/* CHANGED: Primary Glass Button (Cyan Glow) */}
           <a href="#services" className="px-8 py-4 text-lg font-bold text-cyan-100 rounded-full bg-cyan-500/10 border border-cyan-500/20 backdrop-blur-md hover:bg-cyan-500/20 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all duration-300">
             View Capabilities
           </a>
-          {/* CHANGED: Secondary Glass Button (Frosted White) */}
           <a href="#process" className="px-8 py-4 text-lg font-medium text-gray-300 rounded-full bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 hover:border-white/30 hover:text-white transition-all duration-300">
             Our Methodology
           </a>
@@ -255,25 +264,21 @@ const Process = () => {
           <h2 className="text-4xl font-bold text-white">The Engineering Cycle</h2>
         </div>
         
-        {/* Added extra vertical gap for mobile */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-12 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
           {[
             { step: "01", title: "Discovery", text: "We analyze your data infrastructure and identify high-value automation targets." },
             { step: "02", title: "Architecture", text: "We design secure, scalable AI agents tailored to your specific operational logic." },
             { step: "03", title: "Deployment", text: "Rigorous testing, secure implementation, and continuous model optimization." }
           ].map((p, i) => (
-            // Added 'pt-2' to push content down slightly
-            <div key={i} className="relative pt-2">
-              {/* UPDATES HERE: 
-                  1. text-6xl md:text-8xl -> Smaller numbers on mobile, big on desktop
-                  2. -top-8 -> Pulled the number higher up so it sits above the text
-                  3. opacity-30 -> Made it more subtle so text is easier to read
-              */}
-              <div className="text-6xl md:text-8xl font-bold text-slate-800/30 absolute -top-10 left-0 md:-top-10 md:-left-4 -z-10 select-none">
+            <div key={i} className="relative group">
+              {/* Number is now a Block element (not absolute) so it pushes text down */}
+              <div className="text-7xl md:text-8xl font-bold text-slate-800/40 mb-[-20px] md:mb-[-30px] z-0 select-none group-hover:text-brand-900/40 transition-colors duration-500">
                 {p.step}
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4 pl-4 border-l-4 border-brand-500">{p.title}</h3>
-              <p className="text-slate-400 pl-4">{p.text}</p>
+              <div className="relative z-10 pl-4">
+                <h3 className="text-2xl font-bold text-white mb-4 border-l-4 border-brand-500 pl-4">{p.title}</h3>
+                <p className="text-slate-400">{p.text}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -281,6 +286,7 @@ const Process = () => {
     </section>
   );
 };
+
 /* --- Testimonials --- */
 const Testimonials = () => {
   const reviews = [
@@ -306,13 +312,13 @@ const Testimonials = () => {
   );
 };
 
-/* --- Footer (Minimal, No Contact) --- */
+/* --- Footer --- */
 const Footer = () => (
   <footer className="bg-dark-950 py-12 border-t border-slate-900">
     <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
       <div className="flex flex-col items-center md:items-start">
         <span className="text-xl font-bold text-white tracking-widest uppercase mb-2">Mandrea<span className="text-brand-500">Logic</span></span>
-        <span className="text-xs text-slate-600">Bucharest • London • Tallinn</span>
+        <span className="text-xs text-slate-500 font-medium tracking-wider">ROME • LONDON • BUCHAREST</span>
       </div>
       
       <div className="flex gap-8 text-sm text-slate-500">
