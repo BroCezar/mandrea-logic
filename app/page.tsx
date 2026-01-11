@@ -142,7 +142,30 @@ const Navbar = () => {
   );
 };
 
-/*/* --- Hero Section --- */
+/* --- Hero Section --- */
+// 1. New Typewriter Component (Add this above the Hero function or inside the file)
+const TypewriterText = ({ text, delay = 0 }: { text: string, delay?: number }) => {
+  const [displayedText, setDisplayedText] = useState('');
+  
+  useEffect(() => {
+    let currentIndex = 0;
+    // Start typing only after the specified delay
+    const startTimeout = setTimeout(() => {
+      const interval = setInterval(() => {
+        setDisplayedText(text.slice(0, currentIndex + 1));
+        currentIndex++;
+        if (currentIndex === text.length) clearInterval(interval);
+      }, 100); // Speed of typing (lower is faster)
+      
+      return () => clearInterval(interval);
+    }, delay);
+
+    return () => clearTimeout(startTimeout);
+  }, [text, delay]);
+
+  return <span>{displayedText}</span>;
+};
+
 const Hero = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
@@ -154,25 +177,35 @@ const Hero = () => {
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-        <div className="inline-block mb-8 px-4 py-1.5 border border-brand-500/30 rounded-full bg-brand-500/5 backdrop-blur-sm">
+        <div className="inline-block mb-8 px-4 py-1.5 border border-brand-500/30 rounded-full bg-brand-500/5 backdrop-blur-sm animate-slide-up">
           <span className="text-brand-400 text-xs font-bold tracking-[0.2em] uppercase">System Architecture & Intelligence</span>
         </div>
         
-        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-8 tracking-tight leading-none">
-          LOGIC. <br className="md:hidden" />
-          SCALE. <br className="md:hidden" />
-          {/* UPDATED: Uses Hex codes and inline-block to force visibility on mobile */}
-          <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-[#22d3ee] to-[#818cf8] pb-1">
-            AUTOMATION.
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-8 tracking-tight leading-none min-h-[1.2em] md:min-h-[3em]">
+          {/* LINE 1: Types immediately */}
+          <div className="block">
+            <TypewriterText text="LOGIC." delay={0} />
+          </div>
+          
+          {/* LINE 2: Types after 0.8 seconds (when Logic finishes) */}
+          <div className="block">
+            <TypewriterText text="SCALE." delay={800} />
+          </div>
+          
+          {/* LINE 3: Types after 1.6 seconds (when Scale finishes) */}
+          <span className="inline-block pb-1 text-[#22d3ee] md:text-transparent md:bg-clip-text md:bg-gradient-to-r md:from-[#22d3ee] md:to-[#818cf8]">
+             <TypewriterText text="AUTOMATION." delay={1600} />
           </span>
+          {/* Blinking Cursor */}
+          <span className="animate-pulse text-brand-500">_</span>
         </h1>
         
-        <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed font-light">
+        <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed font-light animate-fade-in" style={{ animationDelay: '2.5s', opacity: 0, animationFillMode: 'forwards' }}>
           Mandrea Logic engineers the neural architecture for next-generation enterprises. 
           We deploy autonomous agents, secure intelligence layers, and predictive workflows.
         </p>
         
-        <div className="flex flex-col sm:flex-row justify-center gap-6">
+        <div className="flex flex-col sm:flex-row justify-center gap-6 animate-fade-in" style={{ animationDelay: '2.8s', opacity: 0, animationFillMode: 'forwards' }}>
           <a href="#services" className="px-8 py-4 text-lg font-bold text-cyan-100 rounded-full bg-cyan-500/10 border border-cyan-500/20 backdrop-blur-md hover:bg-cyan-500/20 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all duration-300">
             View Capabilities
           </a>
