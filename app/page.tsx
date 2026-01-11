@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-/* --- 1. REPLICATED CLOCK COMPONENT --- */
-/* This replaces the video file with a real, working code version */
+/* --- 1. REPLICATED CLOCK COMPONENT (High-Fidelity Version) --- */
 const HulyClock = () => {
   const [time, setTime] = useState<Date | null>(null);
 
@@ -24,39 +23,67 @@ const HulyClock = () => {
   const hourDeg = (hours % 12) * 30 + minutes * 0.5;
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center rounded-full bg-[#0B0C0F] border border-white/5 shadow-2xl">
-      {/* Dynamic Conic Gradient Trail (The "Video" Look) */}
+    <div className="relative w-full h-full flex items-center justify-center rounded-full bg-[#0B0C0F] border border-white/10 shadow-2xl">
+      
+      {/* 1. OUTER BLOOM TRAIL (Conic Gradient) */}
       <div 
-        className="absolute inset-0 rounded-full opacity-50 blur-xl"
+        className="absolute inset-0 rounded-full opacity-60 blur-2xl"
         style={{
           background: `conic-gradient(from ${secDeg - 90}deg, transparent 0%, transparent 80%, #a5f3fc 95%, #ffffff 100%)`,
           transform: 'scale(0.95)'
         }}
       ></div>
 
-      {/* Clock Face */}
-      <div className="relative w-[96%] h-[96%] bg-[#0f1014] rounded-full flex items-center justify-center overflow-hidden border border-white/5 z-10">
+      {/* 2. CLOCK FACE CONTAINER */}
+      <div className="relative w-[96%] h-[96%] bg-[#0f1014] rounded-full flex items-center justify-center overflow-hidden border border-white/5 z-10 shadow-[inset_0_0_40px_rgba(0,0,0,0.8)]">
         
-        {/* Subtle Grid Background */}
-        <div className="absolute inset-0 opacity-20" 
+        {/* Depth Layer: Warm Glow Overlay (Huly Style) */}
+        <div className="absolute inset-0 z-0 opacity-40"
+             style={{ background: 'radial-gradient(circle at center, rgba(255, 150, 50, 0.15) 0%, transparent 60%)' }}>
+        </div>
+
+        {/* Texture: Dot Grid */}
+        <div className="absolute inset-0 opacity-20 z-0" 
              style={{ backgroundImage: 'radial-gradient(#ffffff 0.5px, transparent 0.5px)', backgroundSize: '10px 10px' }}>
         </div>
 
-        {/* Hands */}
-        {/* Hour */}
-        <div className="absolute w-1.5 h-24 bg-gradient-to-t from-slate-500 to-slate-200 rounded-full z-20 origin-bottom" 
-             style={{ transform: `rotate(${hourDeg}deg) translateY(-50%)` }}></div>
-        {/* Minute */}
-        <div className="absolute w-1 h-32 bg-gradient-to-t from-slate-400 to-white rounded-full z-30 origin-bottom shadow-[0_0_10px_rgba(255,255,255,0.3)]" 
-             style={{ transform: `rotate(${minDeg}deg) translateY(-50%)` }}></div>
-        {/* Second (The glowing orange/white runner) */}
-        <div className="absolute w-[2px] h-36 bg-orange-400 z-40 origin-bottom" 
-             style={{ transform: `rotate(${secDeg}deg) translateY(-30%)` }}>
+        {/* 3. THE HANDS (With Z-Index & Shadows) */}
+
+        {/* Hour Hand - Bottom Layer */}
+        <div 
+           className="absolute w-1.5 h-20 bg-gradient-to-t from-slate-600 to-slate-300 rounded-full z-20 origin-bottom"
+           style={{ 
+             transform: `rotate(${hourDeg}deg) translateY(-50%)`,
+             boxShadow: '0 0 4px rgba(0,0,0,0.8)' // Subtle shadow
+           }}
+        ></div>
+
+        {/* Minute Hand - Middle Layer */}
+        <div 
+           className="absolute w-1 h-32 bg-gradient-to-t from-slate-500 to-white rounded-full z-30 origin-bottom"
+           style={{ 
+             transform: `rotate(${minDeg}deg) translateY(-50%)`,
+             boxShadow: '0 4px 10px rgba(0,0,0,0.5), 0 0 8px rgba(255,255,255,0.2)' // Lifted shadow + Glow
+           }}
+        ></div>
+
+        {/* Second Hand - Top Layer (High Contrast) */}
+        <div 
+           className="absolute w-[2px] h-36 bg-orange-500 z-40 origin-bottom"
+           style={{ 
+             transform: `rotate(${secDeg}deg) translateY(-30%)`,
+             boxShadow: '0 0 12px rgba(255, 100, 0, 0.6)' // Strong orange glow
+           }}
+        >
+             {/* Glowing Tip */}
              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_15px_white]"></div>
         </div>
 
-        {/* Center Cap */}
-        <div className="absolute w-3 h-3 bg-white rounded-full z-50 shadow-md"></div>
+        {/* 4. CENTER CAP (Pivot Point) */}
+        <div className="absolute w-4 h-4 rounded-full z-50 flex items-center justify-center bg-gradient-to-br from-slate-200 to-slate-600 shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+             <div className="w-1.5 h-1.5 bg-black rounded-full opacity-50"></div>
+        </div>
+
       </div>
     </div>
   );
@@ -196,7 +223,7 @@ const Hero = () => {
   );
 };
 
-/* --- 5. NEW: CTA SECTION (Huly Style) --- */
+/* --- 5. CTA SECTION (Updated with Pro Clock) --- */
 const CTASection = () => {
   return (
     <section className="relative overflow-hidden bg-[#0f1014] pb-[190px] pt-[77px] md:pb-[251px] md:pt-[109px] lg:pb-[294px] lg:pt-[152px]">
@@ -204,7 +231,6 @@ const CTASection = () => {
         
         {/* Left Side: Clock */}
         <div className="relative w-full h-[403px] flex items-center justify-center md:justify-start pointer-events-none -mt-10 md:-mt-0">
-           {/* Positioning wrapper to match original design offset */}
            <div className="w-[280px] h-[280px] md:w-[332px] md:h-[332px] lg:w-[403px] lg:h-[403px] relative md:-left-4 lg:left-20">
               <HulyClock />
            </div>
@@ -224,22 +250,18 @@ const CTASection = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 items-center w-full">
             
-            {/* Primary Button (Complex Glow) */}
+            {/* Primary Button */}
             <a href="#contact" className="group relative inline-flex items-center justify-center w-[180px] h-12 rounded-full overflow-hidden transition-all duration-200">
-               {/* Button Background */}
                <div className="absolute inset-0 bg-[#d1d1d1] border border-white/60 rounded-full z-10 group-hover:bg-white transition-colors"></div>
-               
-               {/* Inner Glow Gradient Effect */}
                <div className="absolute inset-0 z-0 opacity-100 group-hover:opacity-80 transition-opacity">
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[200%] bg-[radial-gradient(circle_at_center,#FFFFF5_0%,#FFAA81_25%,rgba(210,106,58,0)_70%)] blur-md"></div>
                </div>
-
                <span className="relative z-20 text-[#5A250A] font-bold uppercase text-xs tracking-wide group-hover:scale-105 transition-transform">
                  See in Action
                </span>
             </a>
 
-            {/* Secondary Button (Simple) */}
+            {/* Secondary Button */}
             <a href="#slack" className="group relative inline-flex items-center justify-center w-[180px] h-12 rounded-full bg-[#0B0C0F] border border-white/10 hover:border-white/20 transition-all">
                <div className="flex items-center gap-2">
                  <Icons.Slack />
