@@ -46,16 +46,27 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // Handle Scroll Effect for Navbar background
   useEffect(() => {
+    // 1. FORCE SCROLL TO TOP ON REFRESH
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+
+    // 2. Handle Navbar Background on Scroll
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
-      // Close mobile menu on scroll
       if (isMobileMenuOpen) setIsMobileMenuOpen(false);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isMobileMenuOpen]);
+
+  // Function to smoothly scroll to top
+  const scrollToTop = (e: React.MouseEvent) => {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const navLinks = [
     { name: 'Expertise', href: '#services' },
@@ -69,15 +80,16 @@ const Navbar = () => {
       <header className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'glass border-b border-white/5' : 'bg-transparent py-6'}`}>
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex-shrink-0 flex items-center gap-3">
-              <div className="w-8 h-8 bg-brand-500 rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+            
+            {/* LOGO - Now Clickable to go HOME */}
+            <a href="#" onClick={scrollToTop} className="flex-shrink-0 flex items-center gap-3 cursor-pointer group">
+              <div className="w-8 h-8 bg-brand-500 rounded-sm rotate-45 flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)] group-hover:shadow-[0_0_25px_rgba(6,182,212,0.8)] transition-all">
                 <span className="text-dark-950 font-bold -rotate-45 text-sm">M</span>
               </div>
-              <span className="text-xl font-bold tracking-widest text-white uppercase">
+              <span className="text-xl font-bold tracking-widest text-white uppercase group-hover:text-brand-100 transition-colors">
                 Mandrea<span className="text-brand-500">Logic</span>
               </span>
-            </div>
+            </a>
             
             {/* Desktop Nav */}
             <div className="hidden md:flex items-center space-x-12">
@@ -109,8 +121,8 @@ const Navbar = () => {
       {/* Full Screen Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-dark-950/80 backdrop-blur-xl md:hidden flex items-center justify-center animate-fade-in"
-          onClick={() => setIsMobileMenuOpen(false)} // Close on click outside
+          className="fixed inset-0 z-40 bg-dark-950/95 backdrop-blur-xl md:hidden flex items-center justify-center animate-fade-in"
+          onClick={() => setIsMobileMenuOpen(false)}
         >
           <div className="flex flex-col items-center space-y-8 p-8 text-center">
             {navLinks.map((link) => (
