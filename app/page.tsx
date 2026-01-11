@@ -1,35 +1,71 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
-/* --- ENHANCED CLOCK COMPONENT (Studio-Grade Version) --- */
+/* --- 1. PROFESSIONAL CLOCK (Canvas + CSS Version) --- */
 const HulyClock = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [time, setTime] = useState<Date | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const trailRef = useRef<Array<{ angle: number; opacity: number }>>([]);
 
   useEffect(() => {
+    // Initialize time immediately to avoid hydration mismatch
     setTime(new Date());
-    const interval = setInterval(() => setTime(new Date()), 1000);
+    const interval = setInterval(() => setTime(new Date()), 50);
     return () => clearInterval(interval);
   }, []);
 
+  // Canvas Effect for the "Comet" Trail
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = (e.currentTarget as HTMLElement)?.getBoundingClientRect?.();
-      if (rect) {
-        setMousePos({
-          x: e.clientX - rect.left,
-          y: e.clientY - rect.top
-        });
-      }
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+    if (!canvasRef.current || !time) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const rect = canvas.getBoundingClientRect();
+    // Handle High-DPI displays
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const radius = rect.width / 2 - 20;
+
+    const seconds = time.getSeconds() + time.getMilliseconds() / 1000;
+    // -90 degrees offset to start at top (12 o'clock)
+    const secAngle = (seconds * 6 - 90) * (Math.PI / 180); 
+
+    // Clear Canvas
+    ctx.clearRect(0, 0, rect.width, rect.height);
+
+    // Update Trail Data
+    trailRef.current.push({ angle: secAngle, opacity: 1 });
+    // Keep trail length short for performance/visuals
+    if (trailRef.current.length > 20) {
+      trailRef.current.shift();
+    }
+
+    // Draw Trail
+    trailRef.current.forEach((trail, index) => {
+      const opacity = (index / trailRef.current.length) * 0.8;
+      
+      // Calculate start and end points of the trail segment
+      const x = centerX + Math.cos(trail.angle) * radius * 0.85;
+      const y = centerY + Math.sin(trail.angle) * radius * 0.85;
+      
+      // Draw a glowing dot or line
+      ctx.beginPath();
+      ctx.arc(x, y, 4 * opacity, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 100, 50, ${opacity})`;
+      ctx.fill();
+    });
+
+  }, [time]);
 
   if (!time) return null;
 
-  const seconds = time.getSeconds();
+  const seconds = time.getSeconds() + time.getMilliseconds() / 1000;
   const minutes = time.getMinutes();
   const hours = time.getHours();
 
@@ -38,219 +74,135 @@ const HulyClock = () => {
   const hourDeg = (hours % 12) * 30 + minutes * 0.5;
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center rounded-full bg-black overflow-hidden group">
+    <div className="relative w-full h-full flex items-center justify-center rounded-full bg-black overflow-hidden group border border-white/10 shadow-2xl">
       
-      {/* LAYER 0: BACKGROUND ATMOSPHERE */}
-      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-slate-900/50 via-black to-black"></div>
-      
-      {/* LAYER 1: ANIMATED RING GLOW (Pulsing Aurora) */}
-      <div 
-        className="absolute inset-0 rounded-full opacity-40 blur-3xl animate-pulse"
-        style={{
-          background: `conic-gradient(from ${secDeg}deg, 
-            transparent 0%, 
-            rgba(6, 182, 212, 0.3) 15%, 
-            rgba(139, 92, 246, 0.2) 40%,
-            transparent 60%)`
-        }}
-      ></div>
+      {/* CANVAS LAYER: The "Comet" Trail */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 z-10 pointer-events-none w-full h-full"
+      />
 
-      {/* LAYER 2: SECONDARY GLOW RING */}
+      {/* LAYER 0: BACKGROUND ATMOSPHERE */}
+      <div className="absolute inset-0 rounded-full bg-gradient-to-b from-slate-900/50 via-black to-black z-0"></div>
+      
+      {/* LAYER 1: ANIMATED RING GLOW */}
       <div 
-        className="absolute inset-0 rounded-full opacity-30"
+        className="absolute inset-0 rounded-full opacity-50 blur-3xl z-1"
         style={{
-          background: `conic-gradient(from ${secDeg + 90}deg, 
-            transparent 0%, 
-            rgba(34, 211, 238, 0.15) 20%, 
-            transparent 50%)`
+          background: `conic-gradient(from ${secDeg}deg, transparent 0%, rgba(6, 182, 212, 0.4) 12%, rgba(139, 92, 246, 0.25) 35%, rgba(255, 100, 0, 0.2) 60%, transparent 80%)`,
         }}
       ></div>
 
       {/* LAYER 3: STATIC OUTER RING BORDER */}
-      <div className="absolute inset-0 rounded-full border-2 border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.2)]"></div>
+      <div className="absolute inset-0 rounded-full border-2 border-cyan-500/30 shadow-[0_0_40px_rgba(6,182,212,0.3)] z-2"></div>
 
       {/* LAYER 4: CLOCK FACE CONTAINER */}
-      <div className="relative w-[96%] h-[96%] bg-gradient-to-b from-slate-950 via-black to-slate-950 rounded-full flex items-center justify-center overflow-hidden border border-white/5 z-10 shadow-[inset_0_0_60px_rgba(0,0,0,0.9),inset_0_0_30px_rgba(6,182,212,0.05)]">
+      <div className="relative w-[96%] h-[96%] bg-gradient-to-b from-slate-950 via-black to-slate-950 rounded-full flex items-center justify-center overflow-hidden border border-white/5 z-10 shadow-[inset_0_0_60px_rgba(0,0,0,0.9)]">
         
-        {/* Deep Radial Gradient for Depth */}
-        <div className="absolute inset-0 z-0 opacity-50"
+        {/* Deep Radial Gradient */}
+        <div className="absolute inset-0 z-0 opacity-50" 
              style={{ background: 'radial-gradient(circle at center, rgba(15, 23, 42, 0) 0%, rgba(0, 0, 0, 0.6) 100%)' }}>
         </div>
 
-        {/* LAYER 5: PREMIUM TEXTURE - Subtle Dots + Concentric Rings */}
-        <div className="absolute inset-0 opacity-25 z-0" 
+        {/* Texture */}
+        <div className="absolute inset-0 opacity-20 z-0" 
              style={{ 
-               backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 0.5px, transparent 0.5px)',
+               backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 0.5px, transparent 0.5px)', 
                backgroundSize: '12px 12px' 
              }}>
         </div>
 
-        {/* Concentric Ring Pattern */}
+        {/* Concentric Rings */}
         <div className="absolute inset-0 z-0 opacity-10">
-          {[1, 2, 3, 4].map(i => (
+          {[1, 2, 3, 4].map((i) => (
             <div 
-              key={i}
+              key={i} 
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/20"
               style={{ width: `${20 + i * 20}%`, height: `${20 + i * 20}%` }}
             ></div>
           ))}
         </div>
 
-        {/* LAYER 6: HOUR MARKERS (12-3-6-9 Points) */}
+        {/* LAYER 6: HOUR MARKERS */}
         <div className="absolute inset-0 z-5">
-          {[0, 1, 2, 3].map(i => {
+          {[0, 1, 2, 3].map((i) => {
             const angle = (i * 90) * (Math.PI / 180);
             const x = Math.sin(angle) * 45;
             const y = -Math.cos(angle) * 45;
             return (
-              <div
-                key={i}
-                className="absolute w-1 h-3 bg-gradient-to-b from-cyan-400/80 to-cyan-400/40 rounded-full"
-                style={{
-                  top: '50%',
-                  left: '50%',
+              <div 
+                key={i} 
+                className="absolute w-1.5 h-4 bg-gradient-to-b from-cyan-300 to-cyan-500 rounded-full"
+                style={{ 
+                  top: '50%', 
+                  left: '50%', 
                   transform: `translate(calc(-50% + ${x}%), calc(-50% + ${y}%))`,
-                  boxShadow: '0 0 8px rgba(6, 182, 212, 0.6)'
+                  boxShadow: '0 0 12px rgba(6, 182, 212, 0.8)'
                 }}
               ></div>
             );
           })}
         </div>
 
-        {/* LAYER 7: THE HANDS (Premium Styling) */}
-
-        {/* Hour Hand - Premium Gradient */}
+        {/* LAYER 7a: Hour Hand */}
         <div 
-          className="absolute origin-bottom z-20 group-hover:drop-shadow-[0_0_20px_rgba(100,200,255,0.6)] transition-all duration-200"
-          style={{
-            width: '6px',
-            height: '70px',
-            bottom: '50%',
-            left: '50%',
+          className="absolute origin-bottom z-20"
+          style={{ 
+            width: '6px', 
+            height: '25%', 
+            bottom: '50%', 
+            left: '50%', 
             marginLeft: '-3px',
-            transform: `rotate(${hourDeg}deg) translateY(0)`,
-            background: `linear-gradient(to top, 
-              rgba(30, 144, 255, 0.95) 0%,
-              rgba(100, 180, 255, 0.9) 50%,
-              rgba(200, 220, 255, 0.7) 100%)`,
+            transform: `rotate(${hourDeg}deg)`,
+            background: `linear-gradient(to top, rgba(30, 144, 255, 0.95), rgba(200, 220, 255, 0.7))`,
             borderRadius: '8px 8px 0 0',
-            boxShadow: `
-              0 2px 12px rgba(30, 144, 255, 0.6),
-              0 0 20px rgba(6, 182, 212, 0.4),
-              inset 0 1px 2px rgba(255, 255, 255, 0.3)
-            `,
-            clipPath: 'polygon(0 100%, 50% 0, 100% 100%)'
+            boxShadow: `0 0 20px rgba(6, 182, 212, 0.4)`
           }}
         ></div>
 
-        {/* Minute Hand - Premium Gradient */}
+        {/* LAYER 7b: Minute Hand */}
         <div 
-          className="absolute origin-bottom z-30 group-hover:drop-shadow-[0_0_25px_rgba(0,255,200,0.8)] transition-all duration-200"
-          style={{
-            width: '4px',
-            height: '105px',
-            bottom: '50%',
-            left: '50%',
+          className="absolute origin-bottom z-30"
+          style={{ 
+            width: '4px', 
+            height: '35%', 
+            bottom: '50%', 
+            left: '50%', 
             marginLeft: '-2px',
-            transform: `rotate(${minDeg}deg) translateY(0)`,
-            background: `linear-gradient(to top,
-              rgba(0, 255, 200, 0.95) 0%,
-              rgba(100, 255, 220, 0.9) 50%,
-              rgba(200, 255, 240, 0.8) 100%)`,
+            transform: `rotate(${minDeg}deg)`,
+            background: `linear-gradient(to top, rgba(0, 255, 200, 0.95), rgba(200, 255, 240, 0.8))`,
             borderRadius: '6px 6px 0 0',
-            boxShadow: `
-              0 4px 16px rgba(0, 255, 200, 0.7),
-              0 0 25px rgba(34, 211, 238, 0.5),
-              inset 0 1px 3px rgba(255, 255, 255, 0.4)
-            `,
-            clipPath: 'polygon(0 100%, 50% 0, 100% 100%)'
+            boxShadow: `0 0 25px rgba(34, 211, 238, 0.5)`
           }}
         ></div>
 
-        {/* Second Hand - High Contrast Accent */}
+        {/* LAYER 7c: Second Hand */}
         <div 
-          className="absolute origin-bottom z-40 group-hover:drop-shadow-[0_0_30px_rgba(255,100,0,1)] transition-all duration-200"
-          style={{
-            width: '2px',
-            height: '115px',
-            bottom: '50%',
-            left: '50%',
+          className="absolute origin-bottom z-40"
+          style={{ 
+            width: '2px', 
+            height: '42%', 
+            bottom: '50%', 
+            left: '50%', 
             marginLeft: '-1px',
-            transform: `rotate(${secDeg}deg) translateY(0)`,
-            background: `linear-gradient(to top,
-              rgb(255, 100, 0) 0%,
-              rgb(255, 150, 50) 60%,
-              rgba(255, 200, 100, 0) 100%)`,
-            boxShadow: `
-              0 0 15px rgba(255, 100, 0, 0.8),
-              0 0 30px rgba(255, 100, 0, 0.4),
-              0 2px 8px rgba(0, 0, 0, 0.6)
-            `,
-            filter: 'drop-shadow(0 0 4px rgba(255, 100, 0, 0.6))'
+            transform: `rotate(${secDeg}deg)`,
+            background: `linear-gradient(to top, rgb(255, 100, 0), rgba(255, 200, 100, 0))`,
+            boxShadow: `0 0 15px rgba(255, 100, 0, 0.8)`
           }}
         >
           {/* Glowing Tip */}
-          <div 
-            className="absolute -top-2 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white rounded-full"
-            style={{
-              boxShadow: '0 0 20px rgba(255, 100, 0, 0.9), 0 0 30px rgba(255, 150, 50, 0.6)'
-            }}
-          ></div>
+          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white rounded-full shadow-[0_0_15px_rgba(255,150,50,1)]"></div>
         </div>
 
-        {/* LAYER 8: CENTER CAP (Premium Pivot) */}
-        <div 
-          className="absolute w-5 h-5 rounded-full z-50 flex items-center justify-center backdrop-blur-sm"
-          style={{
-            background: `radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), rgba(100, 150, 255, 0.6), rgba(30, 100, 200, 0.8))`,
-            boxShadow: `
-              0 4px 12px rgba(0, 0, 0, 0.9),
-              0 0 20px rgba(6, 182, 212, 0.6),
-              inset 0 -1px 3px rgba(0, 0, 0, 0.5),
-              inset 0 1px 3px rgba(255, 255, 255, 0.6)
-            `,
-            border: '1.5px solid rgba(200, 220, 255, 0.7)'
-          }}
-        >
-          {/* Inner Shadow Disc */}
-          <div 
-            className="w-2 h-2 rounded-full"
-            style={{
-              background: 'radial-gradient(circle at 40% 40%, rgba(50, 100, 200, 0.8), rgba(10, 20, 60, 0.9))',
-              boxShadow: 'inset 0 -1px 2px rgba(0, 0, 0, 0.8)'
-            }}
-          ></div>
+        {/* LAYER 8: CENTER CAP */}
+        <div className="absolute w-5 h-5 rounded-full z-50 flex items-center justify-center bg-slate-800 border border-slate-600 shadow-lg">
+          <div className="w-2 h-2 rounded-full bg-black"></div>
         </div>
-
-        {/* LAYER 9: AMBIENT GLOW AROUND CENTER (Halo) */}
-        <div 
-          className="absolute w-12 h-12 rounded-full z-45 opacity-40"
-          style={{
-            background: 'radial-gradient(circle, rgba(6, 182, 212, 0.3) 0%, transparent 70%)',
-            filter: 'blur(8px)',
-            boxShadow: '0 0 30px rgba(6, 182, 212, 0.3)'
-          }}
-        ></div>
 
       </div>
-
-      {/* LAYER 10: OUTER RIM BLOOM (Final Touch) */}
-      <div 
-        className="absolute inset-0 rounded-full opacity-50"
-        style={{
-          boxShadow: `
-            0 0 60px rgba(6, 182, 212, 0.3),
-            0 0 100px rgba(139, 92, 246, 0.15),
-            inset 0 0 40px rgba(0, 0, 0, 0.5)
-          `
-        }}
-      ></div>
-
     </div>
   );
 };
-
-
 
 /* --- 2. ICONS & ASSETS --- */
 const Icons = {
@@ -386,7 +338,7 @@ const Hero = () => {
   );
 };
 
-/* --- 5. CTA SECTION (Updated with Pro Clock) --- */
+/* --- 5. CTA SECTION (Huly Style) --- */
 const CTASection = () => {
   return (
     <section className="relative overflow-hidden bg-[#0f1014] pb-[190px] pt-[77px] md:pb-[251px] md:pt-[109px] lg:pb-[294px] lg:pt-[152px]">
@@ -394,6 +346,7 @@ const CTASection = () => {
         
         {/* Left Side: Clock */}
         <div className="relative w-full h-[403px] flex items-center justify-center md:justify-start pointer-events-none -mt-10 md:-mt-0">
+           {/* Positioning wrapper */}
            <div className="w-[280px] h-[280px] md:w-[332px] md:h-[332px] lg:w-[403px] lg:h-[403px] relative md:-left-4 lg:left-20">
               <HulyClock />
            </div>
