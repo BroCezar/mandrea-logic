@@ -150,10 +150,12 @@ const Hero = () => {
         </p>
         
         <div className="flex flex-col sm:flex-row justify-center gap-6">
-          <a href="#services" className="px-8 py-4 bg-white text-dark-950 font-bold rounded hover:bg-slate-200 transition-colors">
+          {/* CHANGED: Primary Glass Button (Cyan Glow) */}
+          <a href="#services" className="px-8 py-4 text-lg font-bold text-cyan-100 rounded-full bg-cyan-500/10 border border-cyan-500/20 backdrop-blur-md hover:bg-cyan-500/20 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all duration-300">
             View Capabilities
           </a>
-          <a href="#process" className="px-8 py-4 bg-transparent border border-slate-700 text-white font-medium rounded hover:border-brand-500 transition-colors">
+          {/* CHANGED: Secondary Glass Button (Frosted White) */}
+          <a href="#process" className="px-8 py-4 text-lg font-medium text-gray-300 rounded-full bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 hover:border-white/30 hover:text-white transition-all duration-300">
             Our Methodology
           </a>
         </div>
@@ -253,14 +255,21 @@ const Process = () => {
           <h2 className="text-4xl font-bold text-white">The Engineering Cycle</h2>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative z-10">
+        {/* Added extra vertical gap for mobile */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-12 relative z-10">
           {[
             { step: "01", title: "Discovery", text: "We analyze your data infrastructure and identify high-value automation targets." },
             { step: "02", title: "Architecture", text: "We design secure, scalable AI agents tailored to your specific operational logic." },
             { step: "03", title: "Deployment", text: "Rigorous testing, secure implementation, and continuous model optimization." }
           ].map((p, i) => (
-            <div key={i} className="relative">
-              <div className="text-8xl font-bold text-slate-800/50 absolute -top-10 -left-4 -z-10 select-none">
+            // Added 'pt-2' to push content down slightly
+            <div key={i} className="relative pt-2">
+              {/* UPDATES HERE: 
+                  1. text-6xl md:text-8xl -> Smaller numbers on mobile, big on desktop
+                  2. -top-8 -> Pulled the number higher up so it sits above the text
+                  3. opacity-30 -> Made it more subtle so text is easier to read
+              */}
+              <div className="text-6xl md:text-8xl font-bold text-slate-800/30 absolute -top-10 left-0 md:-top-10 md:-left-4 -z-10 select-none">
                 {p.step}
               </div>
               <h3 className="text-2xl font-bold text-white mb-4 pl-4 border-l-4 border-brand-500">{p.title}</h3>
@@ -272,7 +281,6 @@ const Process = () => {
     </section>
   );
 };
-
 /* --- Testimonials --- */
 const Testimonials = () => {
   const reviews = [
