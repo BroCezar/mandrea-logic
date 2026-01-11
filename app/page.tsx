@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 
-/* --- 1. THE CLOCK COMPONENT (Integrated directly here) --- */
-const TechClock = () => {
+/* --- 1. REPLICATED CLOCK COMPONENT --- */
+/* This replaces the video file with a real, working code version */
+const HulyClock = () => {
   const [time, setTime] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -12,7 +13,7 @@ const TechClock = () => {
     return () => clearInterval(interval);
   }, []);
 
-  if (!time) return <div className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-dark-950 border border-slate-800 animate-pulse"></div>;
+  if (!time) return null;
 
   const seconds = time.getSeconds();
   const minutes = time.getMinutes();
@@ -23,45 +24,51 @@ const TechClock = () => {
   const hourDeg = (hours % 12) * 30 + minutes * 0.5;
 
   return (
-    <div className="relative w-72 h-72 md:w-80 md:h-80 flex items-center justify-center rounded-full bg-dark-950 shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-slate-800/50 p-2 select-none scale-90 md:scale-100">
-      
-      {/* Outer Glow Trail */}
+    <div className="relative w-full h-full flex items-center justify-center rounded-full bg-[#0B0C0F] border border-white/5 shadow-2xl">
+      {/* Dynamic Conic Gradient Trail (The "Video" Look) */}
       <div 
-        className="absolute inset-0 rounded-full opacity-60 blur-2xl transition-transform duration-1000 ease-linear will-change-transform"
+        className="absolute inset-0 rounded-full opacity-50 blur-xl"
         style={{
-          background: `conic-gradient(from ${secDeg - 90}deg, transparent 0%, transparent 70%, #06b6d4 90%, #f97316 100%)`
+          background: `conic-gradient(from ${secDeg - 90}deg, transparent 0%, transparent 80%, #a5f3fc 95%, #ffffff 100%)`,
+          transform: 'scale(0.95)'
         }}
       ></div>
 
-      {/* Inner Face */}
-      <div className="relative w-full h-full bg-dark-950 rounded-full flex items-center justify-center z-10 overflow-hidden border border-slate-700/30">
-        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#64748b 1px, transparent 1px)', backgroundSize: '8px 8px' }}></div>
-
-        {/* Ticks */}
-        {[...Array(12)].map((_, i) => (
-          <div 
-            key={i} 
-            className={`absolute w-1 h-3 bg-slate-600 ${i % 3 === 0 ? 'h-5 bg-slate-400 w-1.5' : ''}`}
-            style={{ transform: `rotate(${i * 30}deg) translateY(-130px)`, transformOrigin: 'center 140px' }}
-          />
-        ))}
+      {/* Clock Face */}
+      <div className="relative w-[96%] h-[96%] bg-[#0f1014] rounded-full flex items-center justify-center overflow-hidden border border-white/5 z-10">
+        
+        {/* Subtle Grid Background */}
+        <div className="absolute inset-0 opacity-20" 
+             style={{ backgroundImage: 'radial-gradient(#ffffff 0.5px, transparent 0.5px)', backgroundSize: '10px 10px' }}>
+        </div>
 
         {/* Hands */}
-        <div className="absolute w-2 h-20 bg-slate-300 rounded-full z-20 shadow-lg origin-bottom" style={{ transform: `rotate(${hourDeg}deg) translateY(-50%)` }}></div>
-        <div className="absolute w-1.5 h-28 bg-brand-500 rounded-full z-30 shadow-[0_0_10px_rgba(6,182,212,0.5)] origin-bottom" style={{ transform: `rotate(${minDeg}deg) translateY(-50%)` }}></div>
-        <div className="absolute w-0.5 h-32 bg-orange-500 z-40 origin-bottom transition-transform duration-1000 ease-linear" style={{ transform: `rotate(${secDeg}deg) translateY(-30%)` }}>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 bg-orange-500 rounded-full shadow-[0_0_15px_#f97316]"></div>
+        {/* Hour */}
+        <div className="absolute w-1.5 h-24 bg-gradient-to-t from-slate-500 to-slate-200 rounded-full z-20 origin-bottom" 
+             style={{ transform: `rotate(${hourDeg}deg) translateY(-50%)` }}></div>
+        {/* Minute */}
+        <div className="absolute w-1 h-32 bg-gradient-to-t from-slate-400 to-white rounded-full z-30 origin-bottom shadow-[0_0_10px_rgba(255,255,255,0.3)]" 
+             style={{ transform: `rotate(${minDeg}deg) translateY(-50%)` }}></div>
+        {/* Second (The glowing orange/white runner) */}
+        <div className="absolute w-[2px] h-36 bg-orange-400 z-40 origin-bottom" 
+             style={{ transform: `rotate(${secDeg}deg) translateY(-30%)` }}>
+             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_15px_white]"></div>
         </div>
-        
-        <div className="absolute w-4 h-4 bg-slate-200 rounded-full z-50 border-2 border-dark-950"></div>
-        <div className="absolute top-20 text-[10px] font-bold tracking-[0.3em] text-slate-600 uppercase">Mandrea</div>
+
+        {/* Center Cap */}
+        <div className="absolute w-3 h-3 bg-white rounded-full z-50 shadow-md"></div>
       </div>
     </div>
   );
 };
 
-/* --- 2. ICONS --- */
+/* --- 2. ICONS & ASSETS --- */
 const Icons = {
+  Slack: () => (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+       <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.522 2.521 2.527 2.527 0 0 1-2.522-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.522 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.522 2.52A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.522-2.522v-2.522h2.522zM15.165 17.688a2.527 2.527 0 0 1-2.522-2.522 2.527 2.527 0 0 1 2.522-2.522h6.312A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.522h-6.312z"/>
+    </svg>
+  ),
   Chip: () => (<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25z" /></svg>),
   Network: () => (<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" /></svg>),
   Analytics: () => (<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6"><path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" /></svg>),
@@ -184,40 +191,65 @@ const Hero = () => {
         <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed font-light animate-fade-in" style={{ animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
           Mandrea Logic engineers the neural architecture for next-generation enterprises. We deploy autonomous agents, secure intelligence layers, and predictive workflows.
         </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-6 animate-fade-in" style={{ animationDelay: '2.2s', opacity: 0, animationFillMode: 'forwards' }}>
-          <a href="#services" className="px-8 py-4 text-lg font-bold text-cyan-100 rounded-full bg-cyan-500/10 border border-cyan-500/20 backdrop-blur-md hover:bg-cyan-500/20 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all duration-300">View Capabilities</a>
-          <a href="#process" className="px-8 py-4 text-lg font-medium text-gray-300 rounded-full bg-white/5 border border-white/10 backdrop-blur-md hover:bg-white/10 hover:border-white/30 hover:text-white transition-all duration-300">Our Methodology</a>
-        </div>
       </div>
     </section>
   );
 };
 
-/* --- 5. REAL-TIME INTELLIGENCE (With Clock) --- */
-const RealTimeSection = () => {
+/* --- 5. NEW: CTA SECTION (Huly Style) --- */
+const CTASection = () => {
   return (
-    <section className="py-24 bg-dark-950 border-y border-slate-800/50 overflow-hidden relative">
-      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center gap-16">
-        <div className="md:w-1/2 relative z-10">
-          <div className="flex items-center gap-2 mb-4">
-             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-             <span className="text-xs font-mono text-green-500 tracking-widest">SYSTEM ONLINE</span>
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">Real-Time <span className="text-brand-500">Intelligence</span></h2>
-          <p className="text-slate-400 text-lg leading-relaxed mb-8">
-             Our temporal logic engines synchronize global data streams with millisecond precision. Monitor, analyze, and react to market shifts the instant they occur.
+    <section className="relative overflow-hidden bg-[#0f1014] pb-[190px] pt-[77px] md:pb-[251px] md:pt-[109px] lg:pb-[294px] lg:pt-[152px]">
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-0 relative">
+        
+        {/* Left Side: Clock */}
+        <div className="relative w-full h-[403px] flex items-center justify-center md:justify-start pointer-events-none -mt-10 md:-mt-0">
+           {/* Positioning wrapper to match original design offset */}
+           <div className="w-[280px] h-[280px] md:w-[332px] md:h-[332px] lg:w-[403px] lg:h-[403px] relative md:-left-4 lg:left-20">
+              <HulyClock />
+           </div>
+        </div>
+
+        {/* Right Side: Text & Buttons */}
+        <div className="relative z-10 flex flex-col items-center md:items-start text-center md:text-left pt-10 md:pt-20">
+          
+          <h2 className="max-w-[510px] bg-gradient-to-br from-white from-30% via-[#d5d8f6] via-80% to-[#fdf7fe] bg-clip-text font-sans text-4xl md:text-6xl lg:text-[80px] font-medium leading-[1.1] tracking-tight text-transparent mb-6">
+            Join the Movement
+          </h2>
+
+          <p className="relative z-10 mb-8 md:mb-10 text-lg md:text-xl leading-snug tracking-tight text-gray-300 max-w-md">
+            Unlock the future of productivity with Mandrea Logic.<br />
+            Remember, this journey is just getting started.
           </p>
-          <div className="flex flex-wrap gap-4">
-             <div className="px-4 py-2 bg-dark-900 border border-slate-800 rounded text-xs font-mono text-brand-400">LATENCY: &lt; 12ms</div>
-             <div className="px-4 py-2 bg-dark-900 border border-slate-800 rounded text-xs font-mono text-brand-400">UPTIME: 99.99%</div>
-             <div className="px-4 py-2 bg-dark-900 border border-slate-800 rounded text-xs font-mono text-brand-400">SYNC: ACTIVE</div>
+
+          <div className="flex flex-col sm:flex-row gap-4 items-center w-full">
+            
+            {/* Primary Button (Complex Glow) */}
+            <a href="#contact" className="group relative inline-flex items-center justify-center w-[180px] h-12 rounded-full overflow-hidden transition-all duration-200">
+               {/* Button Background */}
+               <div className="absolute inset-0 bg-[#d1d1d1] border border-white/60 rounded-full z-10 group-hover:bg-white transition-colors"></div>
+               
+               {/* Inner Glow Gradient Effect */}
+               <div className="absolute inset-0 z-0 opacity-100 group-hover:opacity-80 transition-opacity">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[200%] bg-[radial-gradient(circle_at_center,#FFFFF5_0%,#FFAA81_25%,rgba(210,106,58,0)_70%)] blur-md"></div>
+               </div>
+
+               <span className="relative z-20 text-[#5A250A] font-bold uppercase text-xs tracking-wide group-hover:scale-105 transition-transform">
+                 See in Action
+               </span>
+            </a>
+
+            {/* Secondary Button (Simple) */}
+            <a href="#slack" className="group relative inline-flex items-center justify-center w-[180px] h-12 rounded-full bg-[#0B0C0F] border border-white/10 hover:border-white/20 transition-all">
+               <div className="flex items-center gap-2">
+                 <Icons.Slack />
+                 <span className="text-white font-bold uppercase text-xs tracking-wide">Join our Slack</span>
+               </div>
+            </a>
+
           </div>
         </div>
-        <div className="md:w-1/2 flex justify-center relative">
-           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-brand-500/10 blur-[80px] rounded-full"></div>
-           {/* Calling the internal TechClock component */}
-           <TechClock />
-        </div>
+
       </div>
     </section>
   );
@@ -353,7 +385,7 @@ export default function Home() {
     <main className="bg-dark-950 min-h-screen selection:bg-brand-500/30 selection:text-white">
       <Navbar />
       <Hero />
-      <RealTimeSection />
+      <CTASection />
       <Services />
       <Industries />
       <Process />
