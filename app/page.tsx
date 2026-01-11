@@ -172,7 +172,6 @@ const Hero = () => {
     </section>
   );
 };
-};
 
 /* --- Services Section --- */
 const Services = () => {
