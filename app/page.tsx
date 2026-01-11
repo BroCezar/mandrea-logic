@@ -143,19 +143,17 @@ const Navbar = () => {
 };
 
 /* --- Hero Section --- */
-// 1. New Typewriter Component (Add this above the Hero function or inside the file)
 const TypewriterText = ({ text, delay = 0 }: { text: string, delay?: number }) => {
   const [displayedText, setDisplayedText] = useState('');
   
   useEffect(() => {
     let currentIndex = 0;
-    // Start typing only after the specified delay
     const startTimeout = setTimeout(() => {
       const interval = setInterval(() => {
         setDisplayedText(text.slice(0, currentIndex + 1));
         currentIndex++;
         if (currentIndex === text.length) clearInterval(interval);
-      }, 100); // Speed of typing (lower is faster)
+      }, 75); // Faster typing speed
       
       return () => clearInterval(interval);
     }, delay);
@@ -182,30 +180,25 @@ const Hero = () => {
         </div>
         
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-8 tracking-tight leading-none min-h-[1.2em] md:min-h-[3em]">
-          {/* LINE 1: Types immediately */}
           <div className="block">
             <TypewriterText text="LOGIC." delay={0} />
           </div>
           
-          {/* LINE 2: Types after 0.8 seconds (when Logic finishes) */}
           <div className="block">
-            <TypewriterText text="SCALE." delay={800} />
+            <TypewriterText text="SCALE." delay={600} />
           </div>
           
-          {/* LINE 3: Types after 1.6 seconds (when Scale finishes) */}
           <span className="inline-block pb-1 text-[#22d3ee] md:text-transparent md:bg-clip-text md:bg-gradient-to-r md:from-[#22d3ee] md:to-[#818cf8]">
-             <TypewriterText text="AUTOMATION." delay={1600} />
+             <TypewriterText text="AUTOMATION." delay={1200} />
           </span>
-          {/* Blinking Cursor */}
-          <span className="animate-pulse text-brand-500">_</span>
         </h1>
         
-        <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed font-light animate-fade-in" style={{ animationDelay: '2.5s', opacity: 0, animationFillMode: 'forwards' }}>
+        <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed font-light animate-fade-in" style={{ animationDelay: '2s', opacity: 0, animationFillMode: 'forwards' }}>
           Mandrea Logic engineers the neural architecture for next-generation enterprises. 
           We deploy autonomous agents, secure intelligence layers, and predictive workflows.
         </p>
         
-        <div className="flex flex-col sm:flex-row justify-center gap-6 animate-fade-in" style={{ animationDelay: '2.8s', opacity: 0, animationFillMode: 'forwards' }}>
+        <div className="flex flex-col sm:flex-row justify-center gap-6 animate-fade-in" style={{ animationDelay: '2.2s', opacity: 0, animationFillMode: 'forwards' }}>
           <a href="#services" className="px-8 py-4 text-lg font-bold text-cyan-100 rounded-full bg-cyan-500/10 border border-cyan-500/20 backdrop-blur-md hover:bg-cyan-500/20 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all duration-300">
             View Capabilities
           </a>
