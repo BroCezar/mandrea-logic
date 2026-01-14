@@ -44,8 +44,14 @@ const HulyClock = () => {
     // Add current position to trail
     trailRef.current.push({ angle: secAngle, timestamp: now });
 
-    // Remove old trail points (older than 2 seconds)
-    trailRef.current = trailRef.current.filter(t => now - t.timestamp < 2000);
+    // Remove old trail points efficiently
+    let firstPointToKeep = 0;
+    while (firstPointToKeep < trailRef.current.length && now - trailRef.current[firstPointToKeep].timestamp > 2000) {
+      firstPointToKeep++;
+    }
+    if (firstPointToKeep > 0) {
+      trailRef.current.splice(0, firstPointToKeep);
+    }
 
     // Draw the glowing arc trail
     if (trailRef.current.length > 1) {
