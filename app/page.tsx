@@ -25,9 +25,15 @@ const HulyClock = () => {
 
     // Handle High-DPI screens
     const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * window.devicePixelRatio;
-    canvas.height = rect.height * window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    const dpr = window.devicePixelRatio || 1;
+    const targetWidth = Math.floor(rect.width * dpr);
+    const targetHeight = Math.floor(rect.height * dpr);
+
+    if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      ctx.scale(dpr, dpr);
+    }
 
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
