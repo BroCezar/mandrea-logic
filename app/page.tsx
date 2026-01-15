@@ -240,6 +240,7 @@ const Icons = {
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const scrolledRef = useRef(false);
 
   useEffect(() => {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -247,12 +248,29 @@ const Navbar = () => {
     window.scrollTo(0, 0);
     setTimeout(() => window.scrollTo(0, 0), 50);
 
+    let ticking = false;
+    let rafId: number | null = null;
+
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-      if (isMobileMenuOpen) setIsMobileMenuOpen(false);
+      if (!ticking) {
+        rafId = window.requestAnimationFrame(() => {
+          const isScrolled = window.scrollY > 20;
+          if (isScrolled !== scrolledRef.current) {
+            setScrolled(isScrolled);
+            scrolledRef.current = isScrolled;
+          }
+          if (isMobileMenuOpen) setIsMobileMenuOpen(false);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
   }, [isMobileMenuOpen]);
 
   const scrollToTop = (e: React.MouseEvent) => {
