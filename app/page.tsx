@@ -12,9 +12,18 @@ const HulyClock = () => {
   useEffect(() => {
     // Set start time
     setTime(new Date());
-    // Update time every 16ms (~60fps) for smooth animation
-    const interval = setInterval(() => setTime(new Date()), 16);
-    return () => clearInterval(interval);
+
+    let animationFrameId: number;
+
+    const animate = () => {
+      setTime(new Date());
+      animationFrameId = requestAnimationFrame(animate);
+    };
+
+    // Start the animation loop
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrameId);
   }, []);
 
   useEffect(() => {
