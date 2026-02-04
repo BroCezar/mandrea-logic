@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 /* --- 1. HULY CLOCK COMPONENT (Fixed & Formatted) --- */
+const CANVAS_STYLE = { filter: 'blur(0.5px)' };
+
 const HulyClock = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [time, setTime] = useState<Date | null>(null);
@@ -130,7 +132,7 @@ const HulyClock = () => {
       <canvas
         ref={canvasRef}
         className="absolute inset-0 z-10 pointer-events-none w-full h-full"
-        style={{ filter: 'blur(0.5px)' }}
+        style={CANVAS_STYLE}
       />
 
       {/* 2. BACKGROUND ATMOSPHERE */}
