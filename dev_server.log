@@ -1,0 +1,13 @@
+
+> mandrea-logic@1.0.0 dev
+> next dev
+
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ✓ Ready in 1803ms
+ ○ Compiling / ...
+ ✓ Compiled / in 6.1s (502 modules)
+ GET / 200 in 6839ms
+ ✓ Compiled in 764ms (241 modules)
