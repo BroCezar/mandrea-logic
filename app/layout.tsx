@@ -13,6 +13,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Mandrea Logic | Enterprise AI Engineering",
   description: "Mandrea Logic architectures autonomous systems and intelligent workflows for the enterprise sector. Precision engineering for the AI age.",
+  keywords: ['Inteligenta Artificiala', 'Automatizare', 'Software Enterprise', 'Solutii AI', 'Romania', 'Consultanta IT'],
   openGraph: {
     title: "Mandrea Logic",
     description: "Automating intelligence. Scaling logic.",
